@@ -1,0 +1,1033 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AI Python Code Snippet Generator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@700;900&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #fff;
+            --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+            --text-main: #000000;
+            --sidebar-bg: #f1f5f9;
+            --sidebar-border: #27272744;
+            --container-shadow: #a5b4fc44;
+            --code-bg: #18181b;
+            --code-text: #f1f5f9;
+            --primary: #2b2b2b;
+            --primary-light: #494a52;
+            --accent: #06b6d4;
+            --error: #b91c1c;
+            --examples-bg: #f3f4f6;
+            --examples-text: #32373d;
+        }
+
+        body.theme-dark {
+            --bg-main: #18181b;
+            --bg-gradient: linear-gradient(135deg, #3c3c3c 0%, #18181b 100%);
+            --text-main: #c6c6c6;
+            --sidebar-bg: #212121;
+            --sidebar-border: #63b8f144;
+            --container-shadow: #31598744;
+            --code-bg: #1a1f35;
+            --code-text: #dedede;
+            --primary: #cbcbcc;
+            --primary-light: #63c2f1;
+            --accent: #59bfd1;
+            --error: #f87171;
+            --examples-bg: #252525;
+            --examples-text: #e0e7ff;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%) !important;
+            color: var(--text-main) !important;
+        }
+
+        /* Custom theme removed */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--bg-gradient) !important;
+            color: var(--text-main) !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.light-bg {
+            background: linear-gradient(-45deg, #e0e7ff, #f0fdfa, #a5b4fc, #a9e1f7);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            position: relative;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        body.light-bg::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg"><g opacity="0.18"><path d="M0 0L300 200L600 0L900 200L1200 0" stroke="%23007cfb" stroke-width="2"/><path d="M0 400L300 600L600 400L900 600L1200 400" stroke="%23007cfb" stroke-width="2"/><path d="M0 800L300 600L600 800L900 600L1200 800" stroke="%23007cfb" stroke-width="2"/><path d="M0 0L0 400L0 800" stroke="%23007cfb" stroke-width="1"/><path d="M300 0L300 200L300 600L300 800" stroke="%23007cfb" stroke-width="1"/><path d="M600 0L600 400L600 800" stroke="%23007cfb" stroke-width="1"/><path d="M900 0L900 200L900 600L900 800" stroke="%23007cfb" stroke-width="1"/><path d="M1200 0L1200 400L1200 800" stroke="%23007cfb" stroke-width="1"/></g></svg>');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        body.theme-dark.light-bg::before {
+            display: none;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Noto Serif', serif;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            font-size: 3.2em;
+            margin-bottom: 22px;
+            font-family: 'Noto Serif', serif;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 24px rgba(60, 60, 60, 0.18), 0 2px 0 #fff;
+            line-height: 1.08;
+        }
+
+        body.theme-dark h1 {
+            color: #fff;
+            text-shadow: 0 4px 24px rgba(0, 0, 0, 0.28), 0 2px 0 #222;
+        }
+
+        .sidebar,
+        .container,
+        .examples-list,
+        .examples-list li,
+        label,
+        input,
+        textarea,
+        button,
+        .btn,
+        .download-btn,
+        .error,
+        .sidebar-section,
+        .logo-title,
+        .topbar,
+        .history-btn,
+        .dropdown,
+        .dropdown-menu,
+        .dropdown-section {
+            font-family: 'Inter', Arial, sans-serif !important;
+            font-weight: 400;
+        }
+
+        .logo-title.sidebar-logo-title {
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .main-layout {
+            display: flex;
+            min-height: 100vh;
+            padding-left: 270px;
+            /* matches sidebar width */
+            justify-content: center;
+        }
+
+        .sidebar {
+            width: 270px;
+            background: var(--sidebar-bg);
+            border-right: 1.5px solid var(--sidebar-border);
+            padding: 32px 18px 32px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .logo svg {
+            width: 44px;
+            height: 44px;
+            margin-right: 10px;
+        }
+
+        .logo-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h3 {
+            font-family: 'Inter', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 1.15em;
+            color: rgb(72, 179, 195);
+            margin-bottom: 8px;
+            letter-spacing: 0;
+            text-shadow: none;
+        }
+
+        .examples-list {
+            list-style: disc inside;
+            color: var(--examples-text);
+            font-size: 0.97em;
+            font-family: 'Noto Serif', serif;
+            padding: 12px 16px 12px 20px;
+            max-height: 240px;
+            overflow-y: auto;
+            margin: 0 0 0 2px;
+            box-sizing: border-box;
+            background: var(--examples-bg);
+            border-radius: 10px;
+            border: 1.5px solid var(--sidebar-border);
+            box-shadow: 0 2px 12px var(--container-shadow);
+            letter-spacing: 0.01em;
+            line-height: 1.45;
+        }
+
+        .examples-list li {
+            margin-bottom: 4px;
+            line-height: 1.35;
+            font-size: 0.97em;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 700px;
+            margin: 48px auto;
+            /* Remove margin-left: 270px; */
+            background: var(--bg-main) !important;
+            color: var(--text-main) !important;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px var(--container-shadow);
+            padding: 40px 36px 32px 36px;
+            position: relative;
+            min-width: 0;
+            overflow-x: auto;
+            z-index: 1;
+            min-height: 350px;
+            /* ensure enough height for the button to fit */
+            padding-bottom: 90px;
+            /* add space for the fixed button */
+        }
+
+        form {
+            margin-bottom: 18px;
+        }
+
+        textarea {
+            width: 600px;
+            max-width: 95%;
+            min-height: 50px;
+            font-size: 1em;
+            margin: 0 auto 18px auto;
+            border-radius: 16px;
+            border: 1.5px solid var(--primary-light);
+            padding: 16px;
+            display: block;
+            resize: vertical;
+            background: var(--bg-main);
+            color: var(--text-main);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        body.theme-dark textarea {
+            background: #23232a;
+            color: #f1f5f9;
+            border: 1.5px solid #38bdf8;
+        }
+
+        body.theme-dark textarea:focus {
+            border: 2px solid #38bdf8;
+            outline: none;
+            background: #23232a;
+            color: #f1f5f9;
+        }
+
+        .btn {
+            width: 100%;
+            background-image: linear-gradient(90deg, #111 0%, #111 100%);
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--container-shadow);
+            background-size: 200% 100%;
+            background-position: left;
+            transition: background-position 0.5s, background 0.5s, color 0.5s, transform 0.3s;
+        }
+
+        .btn:hover {
+            background-image: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            background-position: right;
+            color: #fff;
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        body.theme-dark .btn {
+            background-image: linear-gradient(90deg, #1a2332 0%, #2563eb 100%);
+            background-size: 200% 100%;
+            background-position: left;
+        }
+
+        body.theme-dark .btn:hover {
+            background-image: linear-gradient(90deg, #111 0%, #111 100%);
+            background-position: right;
+            color: #fff;
+        }
+
+        .error {
+            color: var(--error);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .code-section {
+            margin-top: 24px;
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px var(--container-shadow);
+            position: relative;
+            overflow-x: auto;
+            word-break: break-word;
+            font-size: 0.98em;
+            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+        }
+
+        .code-section h2 {
+            color: #06b6d4;
+            font-size: 1.1em;
+            font-family: 'Inter', Arial, sans-serif;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 0;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .download-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #06b6d4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 3px 6px;
+            font-size: 0.92em;
+            cursor: pointer;
+            font-weight: 300;
+            box-shadow: 0 1px 4px #06b6d455;
+            transition: background 0.2s, transform 0.15s;
+            min-width: 26px;
+            min-height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .download-btn svg {
+            width: 16px;
+            height: 16px;
+            display: block;
+        }
+
+        .download-btn span {
+            display: none;
+        }
+
+        .download-btn:hover {
+            background: #0ea5e9;
+            transform: scale(1.07);
+        }
+
+        .topbar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 18px 32px 0 0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+
+        .theme-switcher {
+            gap: 10px;
+        }
+
+        .theme-radio {
+            margin-right: 6px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                min-height: unset;
+                border-right: none;
+                border-bottom: 1.5px solid var(--sidebar-border);
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .container {
+                margin-left: 0;
+                margin-top: 24px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 18px 6px;
+            }
+
+            h1 {
+                font-size: 1.3em;
+            }
+
+            .sidebar {
+                padding: 12px 4px;
+            }
+        }
+
+        .menu-item:hover {
+            background: none;
+        }
+
+        .logo-title.sidebar-logo-title {
+            color: #23272f;
+        }
+
+        body.theme-dark .logo-title.sidebar-logo-title {
+            color: #2563eb;
+        }
+
+        .sidebar-logo-bg {
+            fill: #23272f;
+        }
+
+        body.theme-dark .sidebar-logo-bg {
+            /* Use a blue gradient for the logo in dark mode */
+            fill: url(#sidebarLogoGradient);
+        }
+
+        .main-logo-bg {
+            fill: #23272f;
+        }
+
+        body.theme-dark .main-logo-bg {
+            fill: url(#mainLogoGradient);
+        }
+
+        .history-btn {
+            background: linear-gradient(90deg, #23272f 0%, #59bfd1 100%) !important;
+        }
+
+        body.theme-dark .history-btn {
+            background: linear-gradient(90deg, #1a2332 0%, #2563eb 100%) !important;
+        }
+
+        body.light-bg .container {
+            background: rgba(255, 255, 255, 0.85) !important;
+            /* semi-transparent */
+            backdrop-filter: blur(2px);
+        }
+
+        body.theme-dark .container::before {
+            display: none;
+        }
+
+        .copy-btn,
+        .download-btn {
+            position: absolute;
+            top: 18px;
+            background: #06b6d4;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 2px 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 300;
+            box-shadow: 0 1px 4px #06b6d455;
+            transition: background 0.2s, transform 0.15s;
+            min-width: 24px;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-btn {
+            right: 52px;
+        }
+
+        .download-btn {
+            right: 18px;
+        }
+
+        .copy-btn svg,
+        .download-btn svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+        }
+
+        .copy-btn .tooltip,
+        .download-btn .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            width: max-content;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 2px 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85em;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover,
+        .download-btn:hover {
+            background: #0ea5e9;
+            color: #fff;
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .code-section pre {
+            font-size: 0.98em;
+            font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+            margin: 0;
+        }
+
+        .generate-btn-fixed {
+            position: auto;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            /* or whatever padding you want from the bottom */
+            margin: 0 auto;
+            width: 95%;
+            z-index: 2;
+        }
+
+        .btn.generate-btn-fixed {
+            width: 400px;
+            max-width: 90%;
+            display: block;
+            margin: 0 auto;
+            font-size: 1.05em;
+            font-weight: 600;
+            border-radius: 18px;
+            padding: 12px 0;
+            background: linear-gradient(90deg, #23272f 0%, #06b6d4 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: background 0.3s;
+        }
+
+        .btn.generate-btn-fixed:hover {
+            background: linear-gradient(90deg, #06b6d4 0%, #23272f 100%);
+        }
+
+        label[for="id_prompt"] {
+            display: block;
+            width: 600px;
+            max-width: 95%;
+            margin: 0 auto 8px auto;
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .highlight-blue {
+            color: #20acbc;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #20acbc;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .code-action-buttons {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .download-btn,
+        .copy-btn {
+            /* your existing button styles */
+            position: static;
+            /* Remove any absolute/fixed from the button itself */
+            box-shadow: 0 0 8px #20acbc55;
+        }
+
+        .clear-btn {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            max-width: 44px;
+            max-height: 44px;
+            border-radius: 12px;
+            background: #e5e7eb;
+            color: #23272f;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px auto 0 auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: background 0.2s, transform 0.15s;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .clear-btn:hover {
+            background: #cbd5e1;
+            transform: scale(1.07);
+        }
+
+        .form-btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 0 auto;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .btn.generate-btn-fixed,
+        .clear-btn {
+            margin: 0;
+        }
+
+        /* Only keep the animated gradient for light mode */
+        body.light-bg .background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, #dae0e2, #e0f9ff, #c9bee8, #ced1fb);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
+        }
+        /* Remove any .background or animated gradient CSS for dark mode */
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        body.theme-dark .container {
+            position: relative;
+            background: #1d2022 !important;
+            border-radius: 20px;
+            box-shadow: 0 4px 32px rgba(70, 65, 109, 0.54);
+            z-index: 1;
+        }
+        body.theme-dark .container::before {
+            content: "";
+            position: absolute;
+            inset: -3px; /* thickness of the border */
+            border-radius: 27px; /* border-radius + border thickness */
+            padding: 0;
+            z-index: -1;
+            background: linear-gradient(135deg, #3a185c 0%, #2d1a4a 100%);
+            /* You can adjust the colors above for your preferred dark purple gradient */
+        }
+        body:not(.light-bg) .background,
+        body:not(.light-bg) .content {
+            display: none !important;
+        }
+        body.theme-dark .main-layout {
+            background: #23272a !important;
+            border-radius: 0;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+
+<body class="light-bg">
+    <div class="background"></div>
+    <div id="particles-js"></div>
+    <div class="main-layout">
+        <div class="sidebar">
+                    <div
+                        style="display:flex;align-items:center;gap:10px;margin-bottom:32px;width:100%;justify-content:flex-start;padding-left:0;">
+                        <!-- New AI-inspired logo -->
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="sidebarLogoGradient" x1="0" y1="0" x2="36" y2="36"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#1a2332" />
+                                    <stop offset="1" stop-color="#2563eb" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="18" cy="18" r="18" class="sidebar-logo-bg" />
+                            <path d="M12 18c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7z" fill="#a5b4fc" opacity="0.7" />
+                            <path d="M18 11v14M11 18h14" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="18" cy="18" r="3.5" fill="#fff" />
+                            <path d="M15 15c1.5 1.5 4.5 1.5 6 0" stroke="#fff" stroke-width="1.2" stroke-linecap="round" />
+                        </svg>
+                        <span class="logo-title sidebar-logo-title">Snippet code</span>
+                    </div>
+                    <div class="sidebar-section">
+                        <h3>Prompt Examples</h3>
+                        <ul class="examples-list">
+                            {% for example in examples|slice:":5" %}
+                            <li>{{ example }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <a href="{% url 'history' %}" class="history-btn"
+                        style="margin-top:auto;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#23272f 0%, #59bfd1 100%);color:#fff;font-size:0.98em;font-weight:600;padding:7px 10px;border-radius:8px;box-shadow:0 1px 4px #23272f44;text-decoration:none;transition:background 0.2s,transform 0.15s;margin-bottom:8px;margin-left:0;margin-right:0;width:100%;max-width:170px;">
+                        <svg width="16" height="16" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="18" cy="18" r="18" fill="#fff" fill-opacity="0.18" />
+                            <path d="M18 10v8l6 3" stroke="#fff" stroke-width="2.2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <circle cx="18" cy="18" r="12" stroke="#fff" stroke-width="2.2" />
+                        </svg>
+                        <span style="font-size:0.98em;font-weight:700;">Prompt/Download History</span>
+                    </a>
+                </div>
+                <div class="container">
+                    <!-- Theme toggle button -->
+                    <button id="theme-toggle"
+                        style="position:absolute;top:18px;right:32px;z-index:20;background:var(--sidebar-bg);color:var(--primary);border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;box-shadow:0 1px 4px var(--container-shadow);transition:background 0.2s;">
+                        <span id="theme-toggle-text">🌙 Dark Mode</span>
+                    </button>
+                    <div
+                        style="display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:32px;gap:10px;">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"
+                            style="width:48px;height:48px;margin-bottom:6px;">
+                            <defs>
+                                <linearGradient id="mainLogoGradient" x1="0" y1="0" x2="48" y2="48"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#1a2332" />
+                                    <stop offset="1" stop-color="#2563eb" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="24" cy="24" r="24" class="main-logo-bg" />
+                            <path d="M15 33L33 15M15 15h18v18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <ellipse cx="24" cy="24" rx="8" ry="13" fill="#a5b4fc" opacity="0.5" />
+                            <circle cx="24" cy="24" r="3.5" fill="#fff" />
+                        </svg>
+                        <span style="font-size:2em;font-weight:700;letter-spacing:1px;color:var(--primary);text-align:center;">
+                            <span class="highlight-blue">AI Python</span> Code Snippet Generator
+                        </span>
+                    </div>
+                    <!-- Move prompt input area here, directly below the heading -->
+                    <form method="post" id="form">
+                        {% csrf_token %}
+                        {{ form.model.as_hidden }}
+                        {{ form.prompt.label_tag }}
+                        {{ form.prompt }}
+                        <div class="form-btn-row">
+                            <button type="submit" class="btn generate-btn-fixed">Generate Code</button>
+                            <button type="button" class="btn clear-btn" onclick="clearPrompt()" title="Clear">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" fill="#e5e7eb" />
+                                    <path stroke="#23272f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9 9l6 6m0-6l-6 6" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="loading-message"
+                        style="display:none; text-align:center; font-size:1.1em; margin: 18px auto; color: var(--primary); font-weight: 500;">
+                        <span class="spinner" style="display:inline-block;vertical-align:middle;margin-right:10px;"></span>
+                        Generating your code...
+                    </div>
+                    <!-- Rest of the content (error, code output, etc.) remains below -->
+                    {% if error %}
+                    <div class="error">{{ error }}</div>
+                    {% endif %}
+                    {% if code %}
+                    <div class="code-section">
+                        <div class="code-action-buttons">
+                            <button class="download-btn" onclick="downloadCode()" title="Download">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v12m0 0l-4-4m4 4l4-4m-8 8h8" />
+                                </svg>
+                                <span class="tooltip" id="download-tooltip">Download</span>
+                                <span>Download .py</span>
+                            </button>
+                            <button class="copy-btn" onclick="copyCode()" title="Copy code">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <rect x="8" y="8" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2" />
+                                    <rect x="4" y="4" width="8" height="8" rx="2" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                <span class="tooltip" id="copy-tooltip">Copy</span>
+                            </button>
+                        </div>
+                        <h2>Generated Code:</h2>
+                        <pre id="code-block">{{ code|linebreaksbr }}</pre>
+                    </div>
+                    <script>
+                        // Download tracking and code download
+                        function downloadCode() {
+                            // Remove <br> tags and decode HTML entities
+                            let code = document.getElementById('code-block').innerHTML
+                                .replace(/<br\s*\/?>(\n)?/g, '\n')
+                                .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                            // If user is authenticated, mark as downloaded
+                            
+                            fetch('{% url "mark_downloaded" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: '{}'
+                            }).then(function () {
+                                // Proceed to download
+                                triggerDownload(code);
+                            }).catch(function () {
+                                triggerDownload(code);
+                            });
+                            
+                            triggerDownload(code);
+                            
+                        }
+                        function triggerDownload(code) {
+                            let blob = new Blob([code], { type: 'text/x-python' });
+                            let link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = 'generated_code.py';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                        function copyCode() {
+                            const codeBlock = document.getElementById('code-block');
+                            if (!codeBlock) return;
+                            // Remove <br> tags and decode HTML entities
+                            let code = codeBlock.innerHTML
+                                .replace(/<br\s*\/?>(\n)?/g, '\n')
+                                .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                            // Copy to clipboard
+                            navigator.clipboard.writeText(code);
+                            // Show 'Copied Code' in tooltip
+                            const tooltip = document.getElementById('copy-tooltip');
+                            if (tooltip) {
+                                tooltip.textContent = 'Copied Code';
+                                setTimeout(() => { tooltip.textContent = 'Copy'; }, 2000);
+                            }
+                        }
+                    </script>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="topbar">
+                <div style="margin-right:32px;display:flex;align-items:center;gap:18px;">
+                    {% if user.is_authenticated %}
+                    <!-- No history link here -->
+                    {% else %}
+                    <a href="{% url 'login' %}" style="color:#fff;">Login</a>
+                    <a href="{% url 'register' %}" style="color:#fff;">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Profile dropdown logic
+        const profileBtn = document.getElementById('profile-btn');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        if (profileBtn && profileDropdown) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                profileDropdown.style.display = (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') ? 'block' : 'none';
+            });
+            document.addEventListener('click', function (e) {
+                if (!profileDropdown.contains(e.target) && e.target !== profileBtn) {
+                    profileDropdown.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    <script>
+        // Theme toggle logic
+        (function () {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+            function setTheme(dark) {
+                if (dark) {
+                    document.body.classList.add('theme-dark');
+                    localStorage.setItem('theme', 'dark');
+                    if (themeToggleText) themeToggleText.textContent = '☀️ Light Mode';
+                } else {
+                    document.body.classList.remove('theme-dark');
+                    localStorage.setItem('theme', 'light');
+                    if (themeToggleText) themeToggleText.textContent = '🌙 Dark Mode';
+                }
+            }
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    const isDark = document.body.classList.contains('theme-dark');
+                    setTheme(!isDark);
+                });
+            }
+            // On page load, set theme from localStorage
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') setTheme(true);
+            else setTheme(false);
+        })();
+    </script>
+    <script>
+        document.getElementById('form').addEventListener('submit', function () {
+            document.getElementById('loading-message').style.display = 'block';
+        });
+        window.addEventListener('pageshow', function () {
+            // Hide the loading message if the page is reloaded from cache
+            document.getElementById('loading-message').style.display = 'none';
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.querySelector('textarea[name="prompt"]');
+            if (textarea) {
+                textarea.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault(); // Prevent newline
+                        document.getElementById('form').requestSubmit(); // Submit the form
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        function clearPrompt() {
+            const textarea = document.querySelector('textarea[name="prompt"]');
+            if (textarea) textarea.value = '';
+            const codeBlock = document.getElementById('code-block');
+            if (codeBlock) codeBlock.innerHTML = '';
+        }
+    </script>
+    <!-- tsParticles CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.3.0/tsparticles.bundle.min.js"></script>
+    <div id="tsparticles-bg"
+        style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></div>
+    <script>
+        if (!document.body.classList.contains('theme-dark')) {
+            tsParticles.load("tsparticles-bg", {
+                background: { color: "transparent" },
+                particles: {
+                    number: { value: 60 },
+                    color: { value: "#007cfb" },
+                    links: { enable: true, color: "#007cfb", opacity: 0.18 },
+                    move: { enable: true, speed: 1 },
+                    size: { value: 2 }
+                }
+            });
+        }
+    </script>
+    <script>
+        document.addEventListener('mousemove', function (e) {
+            const x = e.clientX / window.innerWidth * 100;
+            const y = e.clientY / window.innerHeight * 100;
+            document.body.style.background = `radial-gradient(circle at ${x}% ${y}%, #b6e0fe 0%, #f0fdfa 80%)`;
+        });
+    </script>
+    <script>
+        document.addEventListener('mouseleave', function () {
+            document.body.style.background = "";
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+particlesJS.load('particles-js', '{% static "particles.json" %}', function() {
+  console.log('particles.js loaded');
+});
+</script>
+</body>
+
+</html>
